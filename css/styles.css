@@ -312,6 +312,7 @@ nav h1 a {
   font-size: 18px;
   letter-spacing: 3px;
   border-radius: 12px;
+
 }
 #restaurant-hours {
     border-collapse: collapse;
@@ -339,24 +340,6 @@ nav h1 a {
   this project is small, I can keep it here
 */
 @media screen and (min-width: 500px){
-  .rating-heading{
-    display: grid;
-    text-align: left;
-    padding: 12px;
-    grid-template-columns: repeat(1, 1fr);
-    grid-template-areas: "a b";
-  }
-  .reviewer{
-    grid-area: a;
-  }
-  .review-date{
-    grid-area: b;
-  }
-  .rating{
-    max-width: 50%;
-    text-align: center;
-    letter-spacing: 1px;
-  }
   #restaurant-container,
   #reviews-container {
      max-width: 80%;
@@ -395,10 +378,6 @@ nav h1 a {
   #restaurants-list li h2 {
     font-size: 14px;
     font-weight: 700;
-  }
-   .rating{
-    max-width: 45%;
-    text-align: center;
   }
   .filter-options select {
     width: 40%;
