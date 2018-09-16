@@ -16,10 +16,9 @@ class DBHelper {
       }
     });
 
-
-    let DATABASE_URL = "http://localhost:1337/restaurants";
+    let RESTAURANTS_URL = "http://localhost:1337/restaurants";
     let restaurants;
-    fetch(DATABASE_URL)
+    fetch(RESTAURANTS_URL)
     .then((response) =>{
       return response.json();
     }).then((restaurant) =>{
@@ -50,7 +49,7 @@ class DBHelper {
           restaurants = cursor.value;
           callback(null, restaurants);
         }else{
-          const error = `Something went wront`;
+          const error = `Something went wrong`;
           callback(error, null)
         };
         return cursor.continue().then(continueCursoring);

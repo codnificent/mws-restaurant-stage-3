@@ -34,22 +34,6 @@ initMap = () => {
     }
   });
 }  
- 
-/* window.initMap = () => {
-  fetchRestaurantFromURL((error, restaurant) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      self.map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 16,
-        center: restaurant.latlng,
-        scrollwheel: false
-      });
-      fillBreadcrumb();
-      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
-    }
-  });
-} */
 
 /**
  * Get current restaurant from page URL.
@@ -125,24 +109,38 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
 /**
  * Create all reviews HTML and add them to the webpage.
  */
-fillReviewsHTML = (reviews = self.restaurant.reviews) => {
-  const container = document.getElementById('reviews-container');
-  const title = document.createElement('h2');
-  title.setAttribute('tabindex', 0);
-  title.innerHTML = 'Reviews';
-  container.appendChild(title);
 
-  if (!reviews) {
-    const noReviews = document.createElement('p');
-    noReviews.innerHTML = 'No reviews yet!';
-    container.appendChild(noReviews);
-    return;
-  }
-  const ul = document.getElementById('reviews-list');
-  reviews.forEach(review => {
-    ul.appendChild(createReviewHTML(review));
+fillReviewsHTML = () => {
+  let reviews;
+  let reviews_URL = "http://localhost:1337/reviews";
+  fetch(reviews_URL).then((response) =>{
+     return response.json();
+  }).then((review) =>{
+    reviews = review;
+    const container = document.getElementById('reviews-container');
+    const title = document.createElement('h2');
+    title.setAttribute('tabindex', 0);
+    title.innerHTML = 'Reviews';
+    container.appendChild(title);
+   
+    if (!reviews) {
+      console.log(reviews);
+      const noReviews = document.createElement('p');
+      noReviews.innerHTML = 'No reviews yet!';
+      container.appendChild(noReviews);
+      return;
+    }
+    const ul = document.getElementById('reviews-list');
+    reviews.forEach(review => {
+      //This checks each review against restaurants
+      if(review.restaurant_id === self.restaurant.id){;
+        ul.appendChild(createReviewHTML(review));
+      }
+    });
+    container.appendChild(ul);
+  }).catch((error) => {
+ 	console.log("There's an error" + error);
   });
-  container.appendChild(ul);
 }
 
 /**
@@ -158,18 +156,18 @@ createReviewHTML = (review) => {
   name.innerHTML = review.name;
   //li.appendChild(name);
   ratingHeading.appendChild(name);
-
-  const date = document.createElement('p');
-  date.setAttribute("class", "review-date" );
-  date.innerHTML = review.date;
-  //li.appendChild(date);
-  ratingHeading.appendChild(date);
-
   const rating = document.createElement('p');
   rating.setAttribute("class", "rating" );
   rating.innerHTML = `Rating: ${review.rating}`;
   //li.appendChild(rating);
   ratingHeading.appendChild(rating);
+
+  const date = document.createElement('p');
+  date.setAttribute("class", "review-date" );
+  date.innerHTML = `<h3> Review created at:</h3> ${new Date(review.createdAt)}  <br> 
+                   <h3>Review updated at:</h3> ${new Date(review.updatedAt)}`;
+  //li.appendChild(date);
+  ratingHeading.appendChild(date);
 
   li.appendChild(ratingHeading);
 
@@ -207,7 +205,7 @@ getParameterByName = (name, url) => {
     return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
-
+/*
 //Register ServiceWorker
 if('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(() => { 
@@ -216,3 +214,4 @@ if('serviceWorker' in navigator) {
     console.log("Service Worker Registration failed");
   });
 }
+*/
