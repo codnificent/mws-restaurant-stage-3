@@ -1,0 +1,23 @@
+{
+  "short_name": "Restaurants",
+  "name": "Restaurants Reviews App",
+   "description": "A simple app that helps people find restaurants based on proximity and quality of reviews",
+  "icons": [
+    {
+      "src": "img/tomato192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "img/tomato512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "index.html",
+  "lang": "en-US",
+  "background_color": "#f16334",
+  "display": "standalone",
+  "scope": ".",
+  "theme_color": "#f1f1f1"
+}
