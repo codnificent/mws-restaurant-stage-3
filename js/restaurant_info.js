@@ -137,9 +137,10 @@ fillReviewsHTML = () => {
         ul.appendChild(createReviewHTML(review));
       }
     });
+    ul.appendChild(addNewReviews(review));
     container.appendChild(ul);
   }).catch((error) => {
- 	console.log("There's an error" + error);
+ 	console.log("Sorry. There's " + error);
   });
 }
 
@@ -179,6 +180,61 @@ createReviewHTML = (review) => {
 
   return li;
 }
+
+
+addNewReviews = (review) => {
+	const form = document.createElement('form');
+	form.setAttribute('method', 'POST');
+	form.setAttribute('action', 'http://localhost:1337/reviews/');
+	const addReviewHeading = document.createElement('h3')
+	addReviewHeading.setAttribute("class", "heading");
+	addReviewHeading.innerHTML = "Add your own review";
+	form.appendChild(addReviewHeading);
+
+	const nameInput = document.createElement('input');
+	nameInput.setAttribute('class', 'name-input');
+	nameInput.setAttribute('type', 'text');
+	nameInput.setAttribute('placeholder', 'Enter your name..');
+	form.appendChild(nameInput);
+
+	const ratingInput = document.createElement('input');
+	ratingInput.setAttribute('class', 'rating-input');
+	ratingInput.setAttribute('type', 'number');
+	ratingInput.setAttribute('placeholder', 'Enter rating..');
+	form.appendChild(ratingInput);
+
+	const reviewInput = document.createElement('textarea');
+	reviewInput.setAttribute('class', 'review-input');
+	reviewInput.setAttribute('type', 'text');
+	reviewInput.setAttribute('placeholder', 'Your review here..');
+	form.appendChild(reviewInput);
+
+	const reviewButton = document.createElement('button');
+	reviewButton.setAttribute('class', 'review-button');
+	reviewButton.setAttribute('type', 'button');
+	reviewButton.setAttribute('onclick', 'buttonClick()');
+	reviewButton.innerHTML = "Submit Review";
+	buttonClick = () => {
+	    let reviewObject = {
+          "restaurant_id": self.restaurant.id,
+          "name": nameInput.value,
+          "createdAt": (new Date()).getTime(),
+          "updatedAt": (new Date()).getTime(),
+          "rating": ratingInput.value,
+          "comments": reviewInput.value 
+        }
+        if((reviewObject.rating < 0 ) || (reviewObject.rating > 5)){
+     	   window.alert("Oh, Sorry. Your rating must be a value from 0 to 5, inclusive")
+        }else{
+	       //http://localhost:1337/reviewspush(reviewObject);
+	       console.log(review);
+	    }
+	}
+	form.appendChild(reviewButton);
+
+	return form;
+}
+
 
 /**
  * Add restaurant name to the breadcrumb navigation menu
