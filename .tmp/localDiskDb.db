@@ -70,6 +70,7 @@
         },
         "createdAt": 1504095571434,
         "updatedAt": 1504095571434,
+        "is_favorite": false,
         "id": 3
       },
       {
