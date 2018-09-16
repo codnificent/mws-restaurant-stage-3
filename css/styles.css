@@ -331,6 +331,43 @@ nav h1 a {
 .leaflet-left{
   margin-top: 50px;
 }
+form{
+  text-align: center;
+}
+.review-input{
+  border: 1px solid #333;
+  border-radius: 2px;
+  width: 70%;
+  height: 170px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.name-input{
+  border: 1px solid #333;
+  height: 20px;
+  border-radius: 2px;
+  padding: 5px;
+  margin-bottom: 10px;
+  width: 70%;
+}
+.rating-input{
+  border: 1px solid #333;
+  height: 20px;
+  border-radius: 2px;
+  padding: 5px;
+  margin-top: 10px;
+  width: 70%;
+}
+.review-button{
+  margin-bottom: 20px;
+  color: #fff;
+  background: green;
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  width: 70%;
+}
+
 
 
 
