@@ -220,14 +220,25 @@ addNewReviews = (review) => {
           "name": nameInput.value,
           "createdAt": (new Date()).getTime(),
           "updatedAt": (new Date()).getTime(),
-          "rating": ratingInput.value,
+          "rating": parseInt(ratingInput.value),
           "comments": reviewInput.value 
         }
-        if((reviewObject.rating < 0 ) || (reviewObject.rating > 5)){
-     	   window.alert("Oh, Sorry. Your rating must be a value from 0 to 5, inclusive")
+        if((reviewObject.rating < 0 ) || (reviewObject.rating > 5) ||
+        	(reviewObject.name === "") || (reviewObject.rating === "") || 
+        	(reviewObject.comments === "")){
+     	   window.alert(`Oh, Sorry. Your rating must be a value from 0 to 5, inclusive
+     	   	And none of the fields should be empty.`)
         }else{
-	       //http://localhost:1337/reviewspush(reviewObject);
-	       console.log(review);
+	       const url = 'http://localhost:1337/reviews';
+           fetch(url, {
+             method: 'POST', // or 'PUT'
+             body: JSON.stringify(reviewObject),
+             headers:{
+               'Content-Type': 'application/json'
+             }
+           }).then(res => res.json())
+           .then(response => console.log('Success:', JSON.stringify(response)))
+           .catch(error => console.error('Error:', error));
 	    }
 	}
 	form.appendChild(reviewButton);
