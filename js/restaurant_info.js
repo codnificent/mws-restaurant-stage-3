@@ -111,37 +111,83 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
  */
 
 fillReviewsHTML = () => {
+  if (!('indexedDB' in window)) {
+    console.log('This browser doesn\'t support IndexedDB');
+    return;
+  }
+  let dbPromise = idb.open('reviews-db', 1, (upgradeDb) =>{
+    // If browser doesn't support service worker, there's no need having a db
+    if (!navigator.serviceWorker) {
+      return Promise.resolve();
+    };
+    if(!upgradeDb.objectStoreNames.contains('db-review-data')){
+      let dbData = upgradeDb.createObjectStore('db-review-data',  {autoIncrement: true});
+    }
+  });
   let reviews;
-  let reviews_URL = "http://localhost:1337/reviews";
+  const reviews_URL = "http://localhost:1337/reviews";
+  const container = document.getElementById('reviews-container');
+  const title = document.createElement('h2');
+  title.setAttribute('tabindex', 0);
+  title.innerHTML = 'Reviews';
+  container.appendChild(title);
   fetch(reviews_URL).then((response) =>{
      return response.json();
   }).then((review) =>{
     reviews = review;
-    const container = document.getElementById('reviews-container');
-    const title = document.createElement('h2');
-    title.setAttribute('tabindex', 0);
-    title.innerHTML = 'Reviews';
-    container.appendChild(title);
-   
-    if (!reviews) {
-      console.log(reviews);
-      const noReviews = document.createElement('p');
-      noReviews.innerHTML = 'No reviews yet!';
-      container.appendChild(noReviews);
-      return;
-    }
     const ul = document.getElementById('reviews-list');
     reviews.forEach(review => {
-      //This checks each review against restaurants
-      if(review.restaurant_id === self.restaurant.id){;
-        ul.appendChild(createReviewHTML(review));
-      }
+    //This checks each review against restaurants
+    if(review.restaurant_id === self.restaurant.id){;
+      ul.appendChild(createReviewHTML(review));
+    }
     });
     ul.appendChild(addNewReviews(review));
     container.appendChild(ul);
-  }).catch((error) => {
- 	console.log("Sorry. There's " + error);
-  });
+    dbPromise.then((db) => {
+        let tx = db.transaction('db-review-data', 'readwrite');
+        let store = tx.objectStore('db-review-data');
+        let countRequest = store.count().then(function(results) {
+           if(results < 1){
+             store.add(reviews);
+             return tx.complete;
+           }else{
+             return Promise.resolve();
+           }; 
+        });
+    });
+  }).catch(() => {
+  	dbPromise.then((db) => {
+      let tx = db.transaction('db-data', 'readonly');
+      let store = tx.objectStore('db-data');
+      return store.openCursor();
+    }).then(function continueCursoring(cursor) {
+        if (!cursor) {
+          return;
+        }
+        if(cursor.value){
+          revieww = cursor.value;
+          const ul = document.getElementById('reviews-list');
+          reviews.forEach(review => {
+          //This checks each review against restaurants
+          if(review.restaurant_id === self.restaurant.id){;
+            ul.appendChild(createReviewHTML(review));
+          }
+          });
+          ul.appendChild(addNewReviews(review));
+          container.appendChild(ul);
+          console.log(reviews);
+        }else{
+        	if (!reviews) {
+              const noReviews = document.createElement('p');
+              noReviews.innerHTML = 'No reviews yet!';
+              container.appendChild(noReviews);
+              return;
+            }
+        };
+        return cursor.continue().then(continueCursoring);
+      });
+  })
 }
 
 /**
@@ -181,11 +227,17 @@ createReviewHTML = (review) => {
   return li;
 }
 
+/*
+This function is really long. This is so because it reduces the possibility
+of using query sectors to target elements
 
+And, It would've been easier is it was created in html. But, if that
+ happens, the form would appear at the top of the page. This is not ideal
+*/
 addNewReviews = (review) => {
 	const form = document.createElement('form');
-	form.setAttribute('method', 'POST');
-	form.setAttribute('action', 'http://localhost:1337/reviews/');
+	//form.setAttribute('method', 'POST');
+	//form.setAttribute('action', 'http://localhost:1337/reviews/');
 	const addReviewHeading = document.createElement('h3')
 	addReviewHeading.setAttribute("class", "heading");
 	addReviewHeading.innerHTML = "Add your own review";
@@ -214,7 +266,16 @@ addNewReviews = (review) => {
 	reviewButton.setAttribute('type', 'button');
 	reviewButton.setAttribute('onclick', 'buttonClick()');
 	reviewButton.innerHTML = "Submit Review";
-	buttonClick = () => {
+	form.appendChild(reviewButton);
+
+	const successMessage = document.createElement('h4')
+	successMessage.setAttribute("class", "heading");
+	successMessage.innerHTML = "Your review has been posted. Thank you.";
+	successMessage.style.display = 'none';
+	form.appendChild(successMessage);
+
+	buttonClick = (e) => {
+		//reviewButton.preventDefault();
 	    let reviewObject = {
           "restaurant_id": self.restaurant.id,
           "name": nameInput.value,
@@ -232,18 +293,26 @@ addNewReviews = (review) => {
 	       const url = 'http://localhost:1337/reviews';
            fetch(url, {
              method: 'POST', // or 'PUT'
-             body: JSON.stringify(reviewObject),
              headers:{
                'Content-Type': 'application/json'
-             }
+             }, 
+             body: JSON.stringify(reviewObject)
            }).then(res => res.json())
-           .then(response => console.log('Success:', JSON.stringify(response)))
+           .then(response => console.log('Perfecto!: This is your review data..', 
+           	  JSON.stringify(response)))
            .catch(error => console.error('Error:', error));
-	    }
-	}
-	form.appendChild(reviewButton);
+        }
+        //show success alert
+	    successMessage.style.display = "block";
+        //Hide alert after 4 sec
+        setTimeout(function(){
+          successMessage.style.display = "none";
+        }, 4000);
 
+        form.reset();
+	}
 	return form;
+	
 }
 
 
@@ -272,8 +341,9 @@ getParameterByName = (name, url) => {
     return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
-/*
+
 //Register ServiceWorker
+/*
 if('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(() => { 
     console.log("Service Worker Registered."); 
@@ -282,3 +352,4 @@ if('serviceWorker' in navigator) {
   });
 }
 */
+
