@@ -142,7 +142,7 @@ fillReviewsHTML = () => {
       ul.appendChild(createReviewHTML(review));
     }
     });
-    ul.appendChild(addNewReviews(review));
+    ul.appendChild(addNewReviews());
     container.appendChild(ul);
     dbPromise.then((db) => {
         let tx = db.transaction('db-review-data', 'readwrite');
@@ -158,15 +158,15 @@ fillReviewsHTML = () => {
     });
   }).catch(() => {
   	dbPromise.then((db) => {
-      let tx = db.transaction('db-data', 'readonly');
-      let store = tx.objectStore('db-data');
+      let tx = db.transaction('db-review-data', 'readonly');
+      let store = tx.objectStore('db-review-data');
       return store.openCursor();
     }).then(function continueCursoring(cursor) {
         if (!cursor) {
           return;
         }
         if(cursor.value){
-          revieww = cursor.value;
+          reviews = cursor.value;
           const ul = document.getElementById('reviews-list');
           reviews.forEach(review => {
           //This checks each review against restaurants
@@ -174,9 +174,8 @@ fillReviewsHTML = () => {
             ul.appendChild(createReviewHTML(review));
           }
           });
-          ul.appendChild(addNewReviews(review));
+          ul.appendChild(addNewReviews());
           container.appendChild(ul);
-          console.log(reviews);
         }else{
         	if (!reviews) {
               const noReviews = document.createElement('p');
@@ -211,8 +210,7 @@ createReviewHTML = (review) => {
 
   const date = document.createElement('p');
   date.setAttribute("class", "review-date" );
-  date.innerHTML = `<h3> Review created at:</h3> ${new Date(review.createdAt)}  <br> 
-                   <h3>Review updated at:</h3> ${new Date(review.updatedAt)}`;
+  date.innerHTML = `<h3> Review created at:</h3> ${new Date(review.createdAt)}`;
   //li.appendChild(date);
   ratingHeading.appendChild(date);
 
@@ -236,8 +234,6 @@ And, It would've been easier is it was created in html. But, if that
 */
 addNewReviews = (review) => {
 	const form = document.createElement('form');
-	//form.setAttribute('method', 'POST');
-	//form.setAttribute('action', 'http://localhost:1337/reviews/');
 	const addReviewHeading = document.createElement('h3')
 	addReviewHeading.setAttribute("class", "heading");
 	addReviewHeading.innerHTML = "Add your own review";
@@ -260,11 +256,46 @@ addNewReviews = (review) => {
 	reviewInput.setAttribute('type', 'text');
 	reviewInput.setAttribute('placeholder', 'Your review here..');
 	form.appendChild(reviewInput);
+  buttonClick = (e) => {
+    e.preventDefault();
+      let reviewObject = {
+          "restaurant_id": self.restaurant.id,
+          "name": nameInput.value,
+          "createdAt": (new Date()).getTime(),
+          "updatedAt": (new Date()).getTime(),
+          "rating": parseInt(ratingInput.value),
+          "comments": reviewInput.value 
+        }
+        if((reviewObject.rating < 0 ) || (reviewObject.rating > 5) ||
+          (reviewObject.name === "") || (reviewObject.rating === "") || 
+          (reviewObject.comments === "")){
+         window.alert(`Oh, Sorry. Your rating must be a value from 0 to 5, inclusive
+          And none of the fields should be empty.`)
+        }else{
+         const url = 'http://localhost:1337/reviews';
+           fetch(url, {
+             method: 'POST', // or 'PUT'
+             headers:{
+               'Content-Type': 'application/json'
+             }, 
+             body: JSON.stringify(reviewObject)
+           }).then(res => res.json())
+           .then(response => console.log('Perfecto! This is your review data:', JSON.stringify(response)))
+           .catch(error => console.error('Error:', error));
+        }
+        //show success alert
+      successMessage.style.display = "block";
+        //Hide alert after 4 sec
+        setTimeout(function(){
+          successMessage.style.display = "none";
+        }, 4000);
+
+        form.reset();
+  }
 
 	const reviewButton = document.createElement('button');
 	reviewButton.setAttribute('class', 'review-button');
-	reviewButton.setAttribute('type', 'button');
-	reviewButton.setAttribute('onclick', 'buttonClick()');
+	reviewButton.addEventListener("click", buttonClick);
 	reviewButton.innerHTML = "Submit Review";
 	form.appendChild(reviewButton);
 
@@ -274,43 +305,7 @@ addNewReviews = (review) => {
 	successMessage.style.display = 'none';
 	form.appendChild(successMessage);
 
-	buttonClick = (e) => {
-		//reviewButton.preventDefault();
-	    let reviewObject = {
-          "restaurant_id": self.restaurant.id,
-          "name": nameInput.value,
-          "createdAt": (new Date()).getTime(),
-          "updatedAt": (new Date()).getTime(),
-          "rating": parseInt(ratingInput.value),
-          "comments": reviewInput.value 
-        }
-        if((reviewObject.rating < 0 ) || (reviewObject.rating > 5) ||
-        	(reviewObject.name === "") || (reviewObject.rating === "") || 
-        	(reviewObject.comments === "")){
-     	   window.alert(`Oh, Sorry. Your rating must be a value from 0 to 5, inclusive
-     	   	And none of the fields should be empty.`)
-        }else{
-	       const url = 'http://localhost:1337/reviews';
-           fetch(url, {
-             method: 'POST', // or 'PUT'
-             headers:{
-               'Content-Type': 'application/json'
-             }, 
-             body: JSON.stringify(reviewObject)
-           }).then(res => res.json())
-           .then(response => console.log('Perfecto!: This is your review data..', 
-           	  JSON.stringify(response)))
-           .catch(error => console.error('Error:', error));
-        }
-        //show success alert
-	    successMessage.style.display = "block";
-        //Hide alert after 4 sec
-        setTimeout(function(){
-          successMessage.style.display = "none";
-        }, 4000);
-
-        form.reset();
-	}
+	
 	return form;
 	
 }
@@ -343,7 +338,7 @@ getParameterByName = (name, url) => {
 }
 
 //Register ServiceWorker
-/*
+
 if('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(() => { 
     console.log("Service Worker Registered."); 
@@ -351,5 +346,5 @@ if('serviceWorker' in navigator) {
     console.log("Service Worker Registration failed");
   });
 }
-*/
+
 
