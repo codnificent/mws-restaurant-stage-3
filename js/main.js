@@ -174,10 +174,7 @@ createRestaurantHTML = (restaurant) => {
   more.href = DBHelper.urlForRestaurant(restaurant);
   li.append(more)
 
-  //fROM HERE
   let favoriteText = document.createElement("p");
-  favoriteText.id = "text";
-  //favoriteText.style.display = "none";
   favoriteText.innerHTML = "Mark as Favorite";
   li.append(favoriteText);
 
@@ -214,7 +211,6 @@ createRestaurantHTML = (restaurant) => {
 
   let checkedBox = document.createElement("input");
   checkedBox.type = "checkbox";
-  checkedBox.id = "markAsFavorite";
   checkedBox.addEventListener("click", markFunction);
   li.append(checkedBox);
 
