@@ -174,6 +174,50 @@ createRestaurantHTML = (restaurant) => {
   more.href = DBHelper.urlForRestaurant(restaurant);
   li.append(more)
 
+  //fROM HERE
+  let favoriteText = document.createElement("p");
+  favoriteText.id = "text";
+  //favoriteText.style.display = "none";
+  favoriteText.innerHTML = "Mark as Favorite";
+  li.append(favoriteText);
+
+  markFunction = () => {
+    if(checkedBox.checked == true){
+      favoriteText.innerHTML = "Marked as Favorite";
+       const url = `http://localhost:1337/restaurants/${restaurant.id}`;
+           fetch(url, {
+             method: 'PUT', // or 'PUT'
+             headers:{
+               'Content-Type': 'application/json'
+             }, 
+             body: JSON.stringify({is_favorite: true})
+           }).then(res => res.json())
+           .then(response => console.log('Perfecto! This is the data of your favorite restaurant:',
+              JSON.stringify(response)))
+           .catch(error => console.error('Error:', error));
+
+    }else{
+      favoriteText.innerHTML = "Mark as Favorite";
+      const url = `http://localhost:1337/restaurants/${restaurant.id}`;
+           fetch(url, {
+             method: 'PUT', // or 'PUT'
+             headers:{
+               'Content-Type': 'application/json'
+             }, 
+             body: JSON.stringify({is_favorite: false})
+           }).then(res => res.json())
+           .then(response => console.log('Perfecto! This is the data of unfavorited restaurant:',
+              JSON.stringify(response)))
+           .catch(error => console.error('Error:', error));
+    }
+  }
+
+  let checkedBox = document.createElement("input");
+  checkedBox.type = "checkbox";
+  checkedBox.id = "markAsFavorite";
+  checkedBox.addEventListener("click", markFunction);
+  li.append(checkedBox);
+
   return li
 }
 
@@ -192,7 +236,7 @@ addMarkersToMap = (restaurants = self.restaurants) => {
   });
 
 }
-/*
+
 //Register ServiceWorker
 if('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(() => { 
@@ -201,7 +245,7 @@ if('serviceWorker' in navigator) {
     console.log("Service Worker Registration failed");
   });
 }
-*/
+
 
 
 
